@@ -24,6 +24,7 @@ using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Utils;
 using Avalonia.Media;
 using Avalonia.Threading;
+using AvaloniaEdit.Text;
 
 namespace AvaloniaEdit.Editing
 {

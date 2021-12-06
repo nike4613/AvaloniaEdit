@@ -21,6 +21,7 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Text;
 using AvaloniaEdit.Utils;
@@ -114,7 +115,7 @@ namespace AvaloniaEdit.Rendering
             if (ShowBoxForControlCharacters && char.IsControl(c))
             {
                 var p = CurrentContext.GlobalTextRunProperties.Clone();
-                p.ForegroundBrush = Brushes.White;
+                p.ForegroundBrushImpl = Brushes.White;
                 var textFormatter = TextFormatterFactory.Create();
                 var text = FormattedTextElement.PrepareText(textFormatter,
                     TextUtilities.GetControlCharacterName(c), p);
@@ -158,7 +159,7 @@ namespace AvaloniaEdit.Rendering
                 if (startVisualColumn == VisualColumn)
                     return new TabGlyphRun(this, TextRunProperties);
                 if (startVisualColumn == VisualColumn + 1)
-                    return new TextCharacters("\t", TextRunProperties);
+                    return new TextCharacters("\t".AsMemory(), TextRunProperties);
                 throw new ArgumentOutOfRangeException(nameof(startVisualColumn));
             }
 
@@ -187,16 +188,16 @@ namespace AvaloniaEdit.Rendering
 
             public override bool HasFixedSize => true;
 
-            public override StringRange StringRange => default(StringRange);
+            //public override StringRange StringRange => default(StringRange);
 
-            public override int Length => 1;
+            //public override int Length => 1;
 
             public override TextRunProperties Properties { get; }
 
             public override Size GetSize(double remainingParagraphWidth)
             {
-                var width = Math.Min(0, _element.Text.WidthIncludingTrailingWhitespace - 1);
-                return new Size(width, _element.Text.Height);
+                var width = Math.Min(0, _element.Text.LineMetrics.Size.Width - 1);
+                return new Size(width, _element.Text.LineMetrics.Size.Height);
             }
 
             public override Rect ComputeBoundingBox()
@@ -206,8 +207,9 @@ namespace AvaloniaEdit.Rendering
 
             public override void Draw(DrawingContext drawingContext, Point origin)
             {
-                origin = origin.WithY(origin.Y - _element.Text.Baseline);
-                _element.Text.Draw(drawingContext, origin);
+                origin = origin.WithY(origin.Y - _element.Text.LineMetrics.TextBaseline);
+                using (drawingContext.PushPostTransform(Matrix.CreateTranslation(origin.X, origin.Y)))
+                    _element.Text.Draw(drawingContext);
             }
         }
 

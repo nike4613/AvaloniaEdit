@@ -20,6 +20,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Text;
 
 namespace AvaloniaEdit.Rendering
@@ -73,7 +74,7 @@ namespace AvaloniaEdit.Rendering
             if (length <= 0)
                 throw new ArgumentOutOfRangeException(nameof(length), length, "Value must be positive");
 
-            Length = length;
+            //Length = length;
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
             Element = element ?? throw new ArgumentNullException(nameof(element));
         }
@@ -93,10 +94,11 @@ namespace AvaloniaEdit.Rendering
         public override bool HasFixedSize => true;
 
         /// <inheritdoc/>
-        public override StringRange StringRange => default(StringRange);
+        //public override StringRange StringRange => default(StringRange);
 
         /// <inheritdoc/>
-        public override int Length { get; }
+        //public override int Length { get; }
+        //public override int Length { get; }
 
         /// <inheritdoc/>
         public override TextRunProperties Properties { get; }
@@ -115,7 +117,7 @@ namespace AvaloniaEdit.Rendering
         {
             if (Element.IsMeasureValid)
             {
-                var baseline = DesiredSize.Height;
+                //var baseline = DesiredSize.Height;
                 return new Rect(DesiredSize);
             }
 

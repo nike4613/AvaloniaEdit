@@ -31,7 +31,7 @@ namespace AvaloniaEdit.TextMate
                     {
                         if (e.TextRunProperties.ForegroundBrush is SolidColorBrush solidBrush)
                         {
-                            e.TextRunProperties.ForegroundBrush = new SolidColorBrush(solidBrush.Color, opacity);
+                            e.TextRunProperties.ForegroundBrushImpl = new SolidColorBrush(solidBrush.Color, opacity);
                         }
                     });
                 }
@@ -42,7 +42,7 @@ namespace AvaloniaEdit.TextMate
                 {
                     if (e.TextRunProperties.ForegroundBrush is SolidColorBrush solidBrush)
                     {
-                        e.TextRunProperties.ForegroundBrush = new SolidColorBrush(solidBrush.Color, opacity);
+                        e.TextRunProperties.ForegroundBrushImpl = new SolidColorBrush(solidBrush.Color, opacity);
                     }
                 });
             }
@@ -62,12 +62,12 @@ namespace AvaloniaEdit.TextMate
 
                 if (startOffset < CurrentContext.Document.TextLength && endoffset < CurrentContext.Document.TextLength)
                 {
-                    ChangeLinePart(startOffset, endoffset, e => { e.TextRunProperties.ForegroundBrush = foreground; });
+                    ChangeLinePart(startOffset, endoffset, e => { e.TextRunProperties.ForegroundBrushImpl = foreground; });
                 }
             }
             else
             {
-                ChangeLinePart(line.Offset, line.EndOffset, e => { e.TextRunProperties.ForegroundBrush = foreground; });
+                ChangeLinePart(line.Offset, line.EndOffset, e => { e.TextRunProperties.ForegroundBrushImpl = foreground; });
             }
         }
     }

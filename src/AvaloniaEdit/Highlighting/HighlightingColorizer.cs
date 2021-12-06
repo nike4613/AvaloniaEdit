@@ -260,18 +260,18 @@ namespace AvaloniaEdit.Highlighting
             {
                 var b = color.Foreground.GetBrush(context);
                 if (b != null)
-                    element.TextRunProperties.ForegroundBrush = b;
+                    element.TextRunProperties.ForegroundBrushImpl = b;
             }
             if (color.Background != null)
             {
                 var b = color.Background.GetBrush(context);
                 if (b != null)
-                    element.BackgroundBrush = b;
+                    element.TextRunProperties.BackgroundBrushImpl = b;
             }
             if (color.FontStyle != null || color.FontWeight != null || color.FontFamily != null)
             {
                 var tf = element.TextRunProperties.Typeface;
-                element.TextRunProperties.Typeface = new Avalonia.Media.Typeface(
+                element.TextRunProperties.TypefaceImpl = new Avalonia.Media.Typeface(
                     color.FontFamily ?? tf.FontFamily,
                     color.FontStyle ?? tf.Style,
                     color.FontWeight ?? tf.Weight

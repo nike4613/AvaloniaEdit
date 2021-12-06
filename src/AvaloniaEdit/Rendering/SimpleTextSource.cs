@@ -16,11 +16,15 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Text;
+using Avalonia.Utilities;
+using System;
+using System.Buffers;
 
 namespace AvaloniaEdit.Rendering
 {
-    internal sealed class SimpleTextSource : TextSource
+    internal sealed class SimpleTextSource : ITextSource
 	{
 	    private readonly string _text;
 	    private readonly TextRunProperties _properties;
@@ -31,11 +35,11 @@ namespace AvaloniaEdit.Rendering
 			_properties = properties;
 		}
 		
-		public override TextRun GetTextRun(int characterIndex)
+		public TextRun GetTextRun(int characterIndex)
 		{
 		    if (characterIndex < _text.Length)
-				return new TextCharacters(_text, characterIndex, _text.Length - characterIndex, _properties);
-		    return new TextEndOfParagraph(1);
+				return new TextCharacters(new(_text.AsMemory(), characterIndex, _text.Length - characterIndex), _properties);
+		    return new TextEndOfParagraph();
 		}
 	}
 }

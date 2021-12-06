@@ -23,6 +23,7 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Text;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 namespace AvaloniaEdit.Rendering
 {
@@ -75,14 +76,14 @@ namespace AvaloniaEdit.Rendering
 		/// <see cref="TextRunProperties"/> will affect only this
 		/// <see cref="VisualLineElement"/>.
 		/// </summary>
-		public TextRunProperties TextRunProperties { get; private set; }
+		public TextRunPropertiesImpl TextRunProperties { get; private set; }
 		
 		/// <summary>
 		/// Gets/sets the brush used for the background of this <see cref="VisualLineElement" />.
 		/// </summary>
 		public IBrush BackgroundBrush { get; set; }
 		
-		internal void SetTextRunProperties(TextRunProperties p)
+		internal void SetTextRunProperties(TextRunPropertiesImpl p)
 		{
 			TextRunProperties = p;
 		}

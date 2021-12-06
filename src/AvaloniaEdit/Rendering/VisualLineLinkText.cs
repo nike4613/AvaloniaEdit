@@ -22,6 +22,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using System.Diagnostics;
+using Avalonia.Media.TextFormatting;
 
 namespace AvaloniaEdit.Rendering
 {
@@ -69,8 +70,8 @@ namespace AvaloniaEdit.Rendering
         /// <inheritdoc/>
         public override TextRun CreateTextRun(int startVisualColumn, ITextRunConstructionContext context)
         {
-            TextRunProperties.ForegroundBrush = context.TextView.LinkTextForegroundBrush;
-            TextRunProperties.BackgroundBrush = context.TextView.LinkTextBackgroundBrush;
+            TextRunProperties.ForegroundBrushImpl = context.TextView.LinkTextForegroundBrush;
+            TextRunProperties.BackgroundBrushImpl = context.TextView.LinkTextBackgroundBrush;
             return base.CreateTextRun(startVisualColumn, context);
         }
 

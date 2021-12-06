@@ -32,6 +32,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaEdit.Document;
@@ -1058,31 +1059,31 @@ namespace AvaloniaEdit.Rendering
         private TextFormatter _formatter;
         internal TextViewCachedElements CachedElements;
 
-        private TextRunProperties CreateGlobalTextRunProperties()
+        private TextRunPropertiesImpl CreateGlobalTextRunProperties()
         {
-            var properties = new TextRunProperties
+            var properties = new TextRunPropertiesImpl
             {
                 FontSize = FontSize,
-                Typeface = new Typeface(TextBlock.GetFontFamily(this), TextBlock.GetFontStyle(this), TextBlock.GetFontWeight(this)),
-                ForegroundBrush = TextBlock.GetForeground(this),
-                CultureInfo = CultureInfo.CurrentCulture
+                TypefaceImpl = new Typeface(TextBlock.GetFontFamily(this), TextBlock.GetFontStyle(this), TextBlock.GetFontWeight(this)),
+                ForegroundBrushImpl = TextBlock.GetForeground(this),
+                CultureInfoImpl = CultureInfo.CurrentCulture
             };
             return properties;
         }
 
-        private TextParagraphProperties CreateParagraphProperties(TextRunProperties defaultTextRunProperties)
+        private TextParagraphPropertiesImpl CreateParagraphProperties(TextRunProperties defaultTextRunProperties)
         {
-            return new TextParagraphProperties
+            return new TextParagraphPropertiesImpl
             {
-                DefaultTextRunProperties = defaultTextRunProperties,
-                TextWrapping = _canHorizontallyScroll ? TextWrapping.NoWrap : TextWrapping.Wrap,
+                DefaultTextRunPropertiesImpl = defaultTextRunProperties,
+                TextWrappingImpl = _canHorizontallyScroll ? TextWrapping.NoWrap : TextWrapping.Wrap,
                 DefaultIncrementalTab = Options.IndentationSize * WideSpaceWidth
             };
         }
 
         private VisualLine BuildVisualLine(DocumentLine documentLine,
-                                   TextRunProperties globalTextRunProperties,
-                                   TextParagraphProperties paragraphProperties,
+                                   TextRunPropertiesImpl globalTextRunProperties,
+                                   TextParagraphPropertiesImpl paragraphProperties,
                                    VisualLineElementGenerator[] elementGeneratorsArray,
                                    IVisualLineTransformer[] lineTransformersArray,
                                    Size availableSize)
@@ -1132,7 +1133,7 @@ namespace AvaloniaEdit.Rendering
                     paragraphProperties
                 );
                 textLines.Add(textLine);
-                textOffset += textLine.Length;
+                textOffset += textLine.TextRange.Length;
 
                 // exit loop so that we don't do the indentation calculation if there's only a single line
                 if (textOffset >= visualLine.VisualLengthWithEndOfLineMarker)
@@ -1150,7 +1151,7 @@ namespace AvaloniaEdit.Rendering
                         var indentVisualColumn = GetIndentationVisualColumn(visualLine);
                         if (indentVisualColumn > 0 && indentVisualColumn < textOffset)
                         {
-                            indentation = textLine.GetDistanceFromCharacter(indentVisualColumn, 0);
+                            indentation = textLine.GetDistanceFromCharacterHit(new(indentVisualColumn, 0));
                         }
                     }
                     indentation += options.WordWrapIndentation;
@@ -1226,18 +1227,18 @@ namespace AvaloniaEdit.Rendering
                     var offset = 0;
                     foreach (var textLine in visualLine.TextLines)
                     {
-                        foreach (var span in textLine.GetTextRuns())
+                        foreach (var span in textLine.TextRuns)
                         {
                             var inline = span as InlineObjectRun;
                             if (inline?.VisualLine != null)
                             {
                                 Debug.Assert(_inlineObjects.Contains(inline));
-                                var distance = textLine.GetDistanceFromCharacter(offset, 0);
+                                var distance = textLine.GetDistanceFromCharacterHit(new(offset, 0));
                                 inline.Element.Arrange(new Rect(new Point(pos.X + distance, pos.Y), inline.Element.DesiredSize));
                             }
-                            offset += span.Length;
+                            offset += span.TextSourceLength;
                         }
-                        pos = new Point(pos.X, pos.Y + textLine.Height);
+                        pos = new Point(pos.X, pos.Y + textLine.LineMetrics.Size.Height);
                     }
                 }
             }
@@ -1519,10 +1520,10 @@ namespace AvaloniaEdit.Rendering
                 var line = _formatter.FormatLine(
                     new SimpleTextSource("x", textRunProperties),
                     0, 32000,
-                    new TextParagraphProperties { DefaultTextRunProperties = textRunProperties });
-                _wideSpaceWidth = Math.Max(1, line.WidthIncludingTrailingWhitespace);
-                _defaultBaseline = Math.Max(1, line.Baseline);
-                _defaultLineHeight = Math.Max(1, line.Height);
+                    new TextParagraphPropertiesImpl { DefaultTextRunPropertiesImpl = textRunProperties });
+                _wideSpaceWidth = Math.Max(1, line.LineMetrics.Size.Width);
+                _defaultBaseline = Math.Max(1, line.LineMetrics.TextBaseline);
+                _defaultLineHeight = Math.Max(1, line.LineMetrics.Size.Height);
             }
             else
             {

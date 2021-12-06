@@ -21,6 +21,7 @@ using AvaloniaEdit.Text;
 using Avalonia.Controls;
 using Avalonia.Media;
 using AvaloniaEdit.Rendering;
+using Avalonia.Media.TextFormatting;
 
 namespace AvaloniaEdit.Utils
 {
@@ -31,7 +32,7 @@ namespace AvaloniaEdit.Utils
 	{
 	    public static TextFormatter Create()
 	    {
-	        return new TextFormatter();
+			return TextFormatter.Current;
 	    }
 
 		/// <summary>

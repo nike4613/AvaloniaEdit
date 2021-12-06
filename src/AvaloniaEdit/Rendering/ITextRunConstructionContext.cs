@@ -16,6 +16,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Text;
 using AvaloniaEdit.Utils;
@@ -45,7 +46,7 @@ namespace AvaloniaEdit.Rendering
 		/// <summary>
 		/// Gets the global text run properties.
 		/// </summary>
-		TextRunProperties GlobalTextRunProperties { get; }
+		TextRunPropertiesImpl GlobalTextRunProperties { get; }
 		
 		/// <summary>
 		/// Gets a piece of text from the document.

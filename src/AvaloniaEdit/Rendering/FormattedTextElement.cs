@@ -19,6 +19,7 @@
 using System;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Text;
 using AvaloniaEdit.Utils;
 
@@ -89,10 +90,10 @@ namespace AvaloniaEdit.Rendering
                 new SimpleTextSource(text, properties),
                 0,
                 32000,
-                new TextParagraphProperties
+                new TextParagraphPropertiesImpl
                 {
-                    DefaultTextRunProperties = properties,
-                    TextWrapping = TextWrapping.NoWrap,
+                    DefaultTextRunPropertiesImpl = properties,
+                    TextWrappingImpl = TextWrapping.NoWrap,
                     DefaultIncrementalTab = 40
                 });
         }
@@ -118,10 +119,10 @@ namespace AvaloniaEdit.Rendering
         public FormattedTextElement Element { get; }
 
         /// <inheritdoc/>
-        public override StringRange StringRange => default(StringRange);
+        //public override StringRange StringRange => default(StringRange);
 
         /// <inheritdoc/>
-        public override int Length => Element.VisualLength;
+        //public override int Length => Element.VisualLength;
 
         /// <inheritdoc/>
         public override bool HasFixedSize => true;
@@ -137,8 +138,7 @@ namespace AvaloniaEdit.Rendering
                 return formattedText.Bounds.Size;
             }
             var text = Element.TextLine;
-            return new Size(text.WidthIncludingTrailingWhitespace,
-                text.Height);
+            return text.LineMetrics.Size;
         }
 
         /// <inheritdoc/>
@@ -158,7 +158,10 @@ namespace AvaloniaEdit.Rendering
             else
             {
                 //origin.Y -= element.textLine.Baseline;
-                Element.TextLine.Draw(drawingContext, origin);
+                using (drawingContext.PushPostTransform(Matrix.CreateTranslation(origin.X, origin.Y)))
+                {
+                    Element.TextLine.Draw(drawingContext);
+                }
             }
         }
     }

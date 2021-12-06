@@ -33,6 +33,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Text\*" />
+    <Compile Include="Text\TrailingInfo.cs" />
+    <Compile Include="Text\StringRange.cs" />
+    <Compile Include="Text\TextEmbeddedObject.cs" />
+    <Compile Include="Text\TextParagraphPropertiesImpl.cs" />
+    <Compile Include="Text\TextRunPropertiesImpl.cs" />
+    <None Include="Text\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
     <PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1" />

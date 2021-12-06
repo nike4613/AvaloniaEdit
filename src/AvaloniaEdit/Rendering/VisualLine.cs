@@ -24,6 +24,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Text;
 using AvaloniaEdit.Utils;
@@ -287,7 +288,7 @@ namespace AvaloniaEdit.Rendering
             _textLines = new ReadOnlyCollection<TextLine>(textLines);
             Height = 0;
             foreach (var line in textLines)
-                Height += line.Height;
+                Height += line.LineMetrics.Size.Height;
         }
 
         /// <summary>
@@ -345,9 +346,9 @@ namespace AvaloniaEdit.Rendering
                 return TextLines[TextLines.Count - 1];
             foreach (var line in TextLines)
             {
-                if (isAtEndOfLine ? visualColumn <= line.Length : visualColumn < line.Length)
+                if (isAtEndOfLine ? visualColumn <= line.TextRange.Length : visualColumn < line.TextRange.Length)
                     return line;
-                visualColumn -= line.Length;
+                visualColumn -= line.TextRange.Length;
             }
             throw new InvalidOperationException("Shouldn't happen (VisualLength incorrect?)");
         }
@@ -371,22 +372,22 @@ namespace AvaloniaEdit.Rendering
                         case VisualYPosition.LineTop:
                             return pos;
                         case VisualYPosition.LineMiddle:
-                            return pos + tl.Height / 2;
+                            return pos + tl.LineMetrics.Size.Height / 2;
                         case VisualYPosition.LineBottom:
-                            return pos + tl.Height;
+                            return pos + tl.LineMetrics.Size.Height;
                         case VisualYPosition.TextTop:
-                            return pos + tl.Baseline - _textView.DefaultBaseline;
+                            return pos + tl.LineMetrics.TextBaseline- _textView.DefaultBaseline;
                         case VisualYPosition.TextBottom:
-                            return pos + tl.Baseline - _textView.DefaultBaseline + _textView.DefaultLineHeight;
+                            return pos + tl.LineMetrics.TextBaseline - _textView.DefaultBaseline + _textView.DefaultLineHeight;
                         case VisualYPosition.TextMiddle:
-                            return pos + tl.Baseline - _textView.DefaultBaseline + _textView.DefaultLineHeight / 2;
+                            return pos + tl.LineMetrics.TextBaseline - _textView.DefaultBaseline + _textView.DefaultLineHeight / 2;
                         case VisualYPosition.Baseline:
-                            return pos + tl.Baseline;
+                            return pos + tl.LineMetrics.TextBaseline;
                         default:
                             throw new ArgumentException("Invalid yPositionMode:" + yPositionMode);
                     }
                 }
-                pos += tl.Height;
+                pos += tl.LineMetrics.Size.Height;
             }
             throw new ArgumentException("textLine is not a line in this VisualLine");
         }
@@ -399,7 +400,7 @@ namespace AvaloniaEdit.Rendering
             if (!TextLines.Contains(textLine))
                 throw new ArgumentException("textLine is not a line in this VisualLine");
 
-            return TextLines.TakeWhile(tl => tl != textLine).Sum(tl => tl.Length);
+            return TextLines.TakeWhile(tl => tl != textLine).Sum(tl => tl.TextRange.Length);
         }
 
         /// <summary>
@@ -411,7 +412,7 @@ namespace AvaloniaEdit.Rendering
             var pos = VisualTop;
             foreach (var tl in TextLines)
             {
-                pos += tl.Height;
+                pos += tl.LineMetrics.Size.Height;
                 if (visualTop + epsilon < pos)
                     return tl;
             }
@@ -448,8 +449,8 @@ namespace AvaloniaEdit.Rendering
         {
             if (textLine == null)
                 throw new ArgumentNullException(nameof(textLine));
-            var xPos = textLine.GetDistanceFromCharacter(
-                Math.Min(visualColumn, VisualLengthWithEndOfLineMarker), 0);
+            var xPos = textLine.GetDistanceFromCharacterHit(
+                new(Math.Min(visualColumn, VisualLengthWithEndOfLineMarker), 0));
             if (visualColumn > VisualLengthWithEndOfLineMarker)
             {
                 xPos += (visualColumn - VisualLengthWithEndOfLineMarker) * _textView.WideSpaceWidth;
@@ -479,7 +480,7 @@ namespace AvaloniaEdit.Rendering
         {
             var textLine = GetTextLineByVisualYPosition(point.Y);
             var vc = GetVisualColumn(textLine, point.X, allowVirtualSpace);
-            isAtEndOfLine = (vc >= GetTextLineVisualStartColumn(textLine) + textLine.Length);
+            isAtEndOfLine = (vc >= GetTextLineVisualStartColumn(textLine) + textLine.TextRange.Length);
             return vc;
         }
 
@@ -498,8 +499,8 @@ namespace AvaloniaEdit.Rendering
                 }
             }
 
-            var ch = textLine.GetCharacterFromDistance(xPos);
-            return ch.firstIndex + ch.trailingLength;
+            var ch = textLine.GetCharacterHitFromDistance(xPos);
+            return ch.FirstCharacterIndex + ch.TrailingLength;
         }
 
         /// <summary>
@@ -567,12 +568,12 @@ namespace AvaloniaEdit.Rendering
                 // GetCharacterHitFromDistance returns a hit with FirstCharacterIndex=last character in line
                 // and TrailingLength=1 when clicking behind the line, so the floor function needs to handle this case
                 // specially and return the line's end column instead.
-                return GetTextLineVisualStartColumn(textLine) + textLine.Length;
+                return GetTextLineVisualStartColumn(textLine) + textLine.TextRange.Length;
             }
 
             isAtEndOfLine = false;
-            var ch = textLine.GetCharacterFromDistance(point.X);
-            return ch.firstIndex;
+            var ch = textLine.GetCharacterHitFromDistance(point.X);
+            return ch.FirstCharacterIndex;
         }
 
         /// <summary>
@@ -759,7 +760,7 @@ namespace AvaloniaEdit.Rendering
         public VisualLineDrawingVisual(VisualLine visualLine)
         {
             VisualLine = visualLine;
-            LineHeight = VisualLine.TextLines.Sum(textLine => textLine.Height);
+            LineHeight = VisualLine.TextLines.Sum(textLine => textLine.LineMetrics.Size.Height);
         }
 
         public override void Render(DrawingContext context)
@@ -767,8 +768,11 @@ namespace AvaloniaEdit.Rendering
             double pos = 0;
             foreach (var textLine in VisualLine.TextLines)
             {
-                textLine.Draw(context, new Point(0, pos));
-                pos += textLine.Height;
+                using (context.PushPostTransform(Matrix.CreateTranslation(0, pos)))
+                {
+                    textLine.Draw(context);
+                }
+                pos += textLine.LineMetrics.Size.Height;
             }
         }
     }

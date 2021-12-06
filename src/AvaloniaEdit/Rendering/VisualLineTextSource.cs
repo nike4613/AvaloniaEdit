@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Text;
 using AvaloniaEdit.Utils;
@@ -27,7 +28,7 @@ namespace AvaloniaEdit.Rendering
     /// <summary>
     /// TextSource implementation that creates TextRuns for a VisualLine.
     /// </summary>
-    internal sealed class VisualLineTextSource : TextSource, ITextRunConstructionContext
+    internal sealed class VisualLineTextSource : Avalonia.Media.TextFormatting.ITextSource, ITextRunConstructionContext
     {
         public VisualLineTextSource(VisualLine visualLine)
         {
@@ -37,9 +38,9 @@ namespace AvaloniaEdit.Rendering
         public VisualLine VisualLine { get; }
         public TextView TextView { get; set; }
         public TextDocument Document { get; set; }
-        public TextRunProperties GlobalTextRunProperties { get; set; }
+        public TextRunPropertiesImpl GlobalTextRunProperties { get; set; }
 
-        public override TextRun GetTextRun(int characterIndex)
+        public TextRun GetTextRun(int characterIndex)
         {
             try
             {
@@ -52,9 +53,9 @@ namespace AvaloniaEdit.Rendering
                         var run = element.CreateTextRun(characterIndex, this);
                         if (run == null)
                             throw new ArgumentNullException(element.GetType().Name + ".CreateTextRun");
-                        if (run.Length == 0)
+                        if (run.TextSourceLength == 0)
                             throw new ArgumentException("The returned TextRun must not have length 0.", element.GetType().Name + ".Length");
-                        if (relativeOffset + run.Length > element.VisualLength)
+                        if (relativeOffset + run.TextSourceLength > element.VisualLength)
                             throw new ArgumentException("The returned TextRun is too long.", element.GetType().Name + ".CreateTextRun");
                         if (run is InlineObjectRun inlineRun)
                         {
@@ -69,7 +70,7 @@ namespace AvaloniaEdit.Rendering
                 {
                     return CreateTextRunForNewLine();
                 }
-                return new TextEndOfParagraph(1);
+                return new TextEndOfParagraph();
             }
             catch (Exception ex)
             {
